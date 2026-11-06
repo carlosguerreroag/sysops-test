@@ -1,0 +1,21 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+ 
+Vagrant.configure("2") do |config|
+  config.vm.box = "ubuntu/jammy64"
+  config.vm.hostname = "sysops-test01.local"
+  config.vm.network "private_network", ip: "192.168.56.11"
+  config.vm.provider "virtualbox" do |vb|
+    vb.cpus = 2
+    vb.memory = 2048
+    vb.gui = false
+  end
+  config.vm.provision "ansible" do |ansible|
+    ansible.playbook = File.expand_path("../ansible/playbooks/init.yaml", __dir__)
+    ansible.extra_vars = {
+      var1: "var1",
+      var2: 1234
+    }
+    ansible.verbose = "v"
+  end
+end

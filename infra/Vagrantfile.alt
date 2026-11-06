@@ -1,0 +1,73 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+ 
+Vagrant.configure("2") do |config|
+
+# ** DEFAULT VARS ** 
+  default_cpus = 1
+  default_ram = 1024
+  default_box = "ubuntu/jammy64"
+
+  # ** DESIRED VMs ** 
+  vms = [
+    { name: "sysops-test01.local", 
+      ip: "192.168.56.11", 
+      ansible_playbook: "../ansible/playbooks/init.yaml",
+      ansible_vars: {
+        var1: "var1",
+        var2: 1234
+      }
+    }
+  ]
+
+  # ** VAGRANTFILE BODY ** 
+  # -- Plugin support -- 
+  if Vagrant.has_plugin?("vagrant-hostmanager")                                                   
+    config.hostmanager.enabled = true                                                             
+    config.hostmanager.manage_guest = true                                                        
+    config.hostmanager.manage_host = false                                                        
+    config.hostmanager.ignore_private_ip = false                                                  
+  end
+
+  # -- Provisioning loop --
+  vms.each do |vm|
+    config.vm.define vm[:name] do |specs|
+
+      # -- Box, Hostname and Network --
+      specs.vm.box = vm[:box] || default_box
+      specs.vm.hostname = vm[:name]
+      specs.vm.network "private_network", ip: vm[:ip]
+
+      # -- Port forwarding --
+      if vm[:ports]
+        vm[:ports].each do |p|
+          specs.vm.network "forwarded_port",
+            guest: p[:guest],
+            host: p[:host],
+            auto_correct: true
+        end
+      end
+
+      # -- Virt provider config --
+      specs.vm.provider "virtualbox" do |vb|
+        vb.name   = vm[:name]
+        vb.cpus = vm[:cpus] || default_cpus
+        vb.memory = vm[:ram] || default_ram
+        vb.gui = vm[:gui] || false
+      end
+
+      # -- Config management and Bootstrapping (shell scripts/ansible) --
+      if vm[:script]
+        specs.vm.provision "shell", path: File.expand_path(vm[:script], __dir__)
+      end
+      if vm[:ansible_playbook]
+        specs.vm.provision "ansible" do |ansible|
+          ansible.playbook   = File.expand_path(vm[:ansible_playbook], __dir__)
+          ansible.extra_vars = vm[:ansible_vars] if vm[:ansible_vars]
+          ansible.limit      = vm[:name]
+          ansible.verbose    = "v"
+        end
+      end
+    end  
+  end
+end
