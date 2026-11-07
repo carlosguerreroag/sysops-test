@@ -1,0 +1,44 @@
+services:
+  lb:
+  # "external-facing" lb
+    image: haproxy:3.0
+    volumes:
+      - /path/to/etc/haproxy:/usr/local/etc/haproxy:ro # host path tiene q ir inyectado via jinja
+    ports:
+      - 80:80
+    expose:
+      - 80
+    networks:
+      - external
+      - internal
+    depends_on:
+      - api
+      - statics
+
+  api:
+  # /api requests aqui
+    image: registry.k8s.io/echoserver:1.8
+    deploy:
+      mode: replicated
+      replicas: 1 # this has to be injected via jinja
+    expose:
+      - 8080
+    networks:
+      - internal
+
+  statics:
+  # /statis requests aqui
+    image: nginx:latest
+    deploy:
+      mode: replicated
+      replicas: 1 # this also has to be injected via jinja
+    expose:
+      - 80
+    networks:
+      - internal
+
+networks:
+  external:
+    driver: bridge
+  internal:
+    internal: true
