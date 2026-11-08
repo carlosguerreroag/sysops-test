@@ -74,6 +74,8 @@ A single nginx replica (`statics_replicas: 1`) therefore answers `Response from 
 
 Since the server id on the nginx service comes from the header added by HAProxy, nginx does not know its own identity. A request sent directly to the nginx container (bypassing HAProxy) does not carry the `X-Server-ID` header and returns `Response from Server unknown`.
 
+A possible solution to this, considered and discarded, was to loop the `statics` service in `docker-compose.yaml.j2` with Jinja and inject each container's id through an environment variable, so the id would be persistent. That approach was rejected because using replicas keeps the Compose definition cleaner and is considered better practice, even with the weakness above. In that alternative, the id would not be assigned by HAProxy but directly by Ansible based on the number of replicas needed.
+
 <br>
 
 ## HAProxy configs featured
