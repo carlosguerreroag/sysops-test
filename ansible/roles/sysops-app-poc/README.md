@@ -4,6 +4,7 @@ Ansible role that deploys the SysOps app PoC on a Linux host.
 
 >The role renders the configuration files, deploys the containers with Docker Compose, and verifies the endpoints respond with HTTP 200.
 
+<br>
 
 ## Components and Network
 
@@ -17,6 +18,7 @@ Two networks are defined in Compose:
 - `external` (bridge): carries the published port 80, used only by the LB.
 - `internal` (`internal: true`): backends only, no outbound internet access. The LB and both backends are attached to it.
 
+<br>
 
 ## Request flow
 
@@ -35,6 +37,7 @@ Two networks are defined in Compose:
 
 4. `statics_backend` balances with `balance uri` + `hash-type consistent`: the request path is hashed, so a given path is always routed to the same nginx instance.
 
+<br>
 
 ## How the server id is assigned
 
@@ -71,6 +74,7 @@ A single nginx replica (`statics_replicas: 1`) therefore answers `Response from 
 
 Since the server id on the nginx service comes from the header added by HAProxy, nginx does not know its own identity. A request sent directly to the nginx container (bypassing HAProxy) does not carry the `X-Server-ID` header and returns `Response from Server unknown`.
 
+<br>
 
 ## HAProxy configs featured
 
@@ -80,6 +84,7 @@ Since the server id on the nginx service comes from the header added by HAProxy,
 - **Dynamic server discovery:** `server-template` combined with the Docker embedded DNS resolver (`127.0.0.11:53`) discovers the container IPs at runtime, so the number of replicas is driven purely by the variables.
 - **Health checks**: every generated server carries `check`, so HAProxy only routes to healthy containers.
 
+<br>
 
 ## Variables
 
@@ -93,6 +98,7 @@ Since the server id on the nginx service comes from the header added by HAProxy,
 | `haproxy_config_file_src_path` | …/haproxy/haproxy.cfg | Host path of the HAProxy config |
 | `nginx_config_file_src_path` | …/nginx/default.conf | Host path of the nginx config |
 
+<br>
 
 ## Files
 
@@ -108,6 +114,7 @@ Since the server id on the nginx service comes from the header added by HAProxy,
 
 The HAProxy and nginx configuration files are explained line by line in `haproxy-docs.md` and `nginx-docs.md` at the repository root.
 
+<br>
 
 ## Deployment
 
@@ -126,6 +133,7 @@ vagrant provision
 
 The `Vagrantfile` invokes the playbook and passes the replica counts.
 
+<br>
 
 ## Verification
 
@@ -142,6 +150,7 @@ curl http://localhost:8080/statics
 - `/api`: the echoserver returns the request details. Repeated requests show round-robin across the instances (the `host` field changes).
 - `/statics`: returns `Response from Server N`. Repeated requests to the same path return the same `N` (URI hashing); different paths may land on different instances.
 
+<br>
 
 ## Requirements
 

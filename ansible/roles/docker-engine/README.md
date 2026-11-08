@@ -2,6 +2,8 @@
 
 >Ansible role that installs Docker Engine and the Compose plugin on Ubuntu hosts, after this role is run, the host is ready to run containers and `docker-compose`.
 
+<br>
+
 ## What it does
 
 - Adds the official Docker APT repository with its GPG key (using `deb822_repository`).
@@ -9,10 +11,14 @@
 - Adds the `vagrant` user to the `docker` group so that `sudo` is not required.
 - Starts the Docker service and enables it at boot.
 
+<br>
+
 ## Requirements
 
 - This role uses `deb822_repository`, which requires ansible-core 2.15 or later.
 - Network access on the target host to reach the Docker repository.
+
+<br>
 
 ## Variables
 
@@ -24,6 +30,8 @@
 | `docker_repo_gpg_key_url` | https://download.docker.com/linux/ubuntu/gpg | GPG key for the repository |
 | `apt_default_cache_valid_time` | 3600 | `cache_valid_time` value passed to the apt module |
 
+<br>
+
 ## Usage
 
 ```yaml
@@ -32,6 +40,8 @@
   roles:
     - docker-engine
 ```
+
+<br>
 
 ## Notes
 
