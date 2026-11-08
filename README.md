@@ -1,9 +1,9 @@
-# sysops-test
+# SysOps PoC App by Carlos Guerrero
 
-> SysOps test PoC app by Carlos Guerrero
-
-Deploys a mockup infrastructure for a web application, deployed with Ansible on a single Ubuntu VM with Vagrant. 
+>Mockup infrastructure of a web application, deployed with Ansible on a single Ubuntu VM with Vagrant. 
 The stack consists of an HAProxy load balancer that routes traffic to two backends based on the request path: echoserver for `/api` and nginx for `/statics`.
+
+<br>
 
 ## Repository structure
 
@@ -20,6 +20,8 @@ The stack consists of an HAProxy load balancer that routes traffic to two backen
 └── README.md
 ```
 
+<br>
+
 ## Stack
 
 | Service | Image | Role |
@@ -28,6 +30,8 @@ The stack consists of an HAProxy load balancer that routes traffic to two backen
 | api | registry.k8s.io/echoserver:1.8 | Simulates the API behind `/api` |
 | statics | nginx:latest | Serves `/statics`, answering `Response from Server N` |
 
+<br>
+
 ## How traffic is routed
 
 - `/api/...` goes to the echoserver backend, balanced round-robin.
@@ -35,6 +39,8 @@ The stack consists of an HAProxy load balancer that routes traffic to two backen
 - Any other path falls back to the statics backend.
 
 Each nginx instance answers with its own id (`0`, `1`, ...). HAProxy sets the id in the `X-Server-ID` header and nginx reads it with a `map` block, see [sysops-app-poc-role-docs](ansible/roles/sysops-app-poc/README.md) for a detailed end-to-end explanation.
+
+<br>
 
 ## Prerequisites
 
@@ -47,6 +53,8 @@ Each nginx instance answers with its own id (`0`, `1`, ...). HAProxy sets the id
 
   The Vagrant provisioner runs Ansible from your host.
 
+<br>
+
 ## Quick start
 
 ```
@@ -54,6 +62,8 @@ vagrant up
 ```
 
 The `Vagrantfile` provisions an `ubuntu/jammy64` box with Ansible, installs Docker and the Compose plugin, and deploys the stack. The app is reachable on `http://192.168.56.11` through the host-only network, and on `http://localhost:8080` through the forwarded port, which uses NAT and does not depend on host-only routing. If the host-only network is not reachable from your machine (VPN or interface conflict), use `http://localhost:8080`.
+
+<br>
 
 ## Scaling
 
@@ -70,6 +80,8 @@ Set them in the `Vagrantfile` (`ansible.extra_vars`) and re-provision, or run th
 ansible-playbook ansible/playbooks/apps/sysops-poc.yaml -e api_replicas=3 -e statics_replicas=3
 ```
 
+<br>
+
 ## Verifying
 
 ```
@@ -85,10 +97,14 @@ curl http://localhost:8080/statics
 - `/api` returns the echoserver output. Repeated requests show round-robin across instances (the `host` field changes).
 - `/statics` returns `Response from Server N`. Repeated requests to the same path return the same `N`; different paths may land on different instances.
 
+<br>
+
 ## Featured roles docs
 
 - [ansible/roles/docker-engine/README.md](ansible/roles/docker-engine/README.md)
 - [ansible/roles/sysops-app-poc/README.md](ansible/roles/sysops-app-poc/README.md)
+
+<br>
 
 ## Resources I found useful while doing this assessment
 
