@@ -1,0 +1,10 @@
+---
+api_replicas: 1
+statics_replicas: 1
+
+app_user: "vagrant"
+app_name: "sysops-poc"
+app_dir_path: "/home/vagrant/{{ app_name }}"
+
+haproxy_config_file_src_path: "{{ app_dir_path }}/haproxy/haproxy.cfg"
+nginx_config_file_src_path: "{{ app_dir_path }}/nginx/default.conf"

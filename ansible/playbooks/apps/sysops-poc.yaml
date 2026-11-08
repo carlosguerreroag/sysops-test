@@ -1,0 +1,7 @@
+---
+- name: Deploy the SysOps app PoC
+  hosts: all
+  become: true
+  roles:
+    - docker-engine
+    - sysops-app-poc

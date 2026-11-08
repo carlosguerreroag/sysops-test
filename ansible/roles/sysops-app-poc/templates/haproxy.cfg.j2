@@ -1,0 +1,33 @@
+defaults
+    log global
+    mode http
+    option httplog
+    option dontlognull
+    timeout connect 5s
+    timeout client 30s
+    timeout server 30s
+
+resolvers docker
+    nameserver dns 127.0.0.11:53
+    timeout resolve 1s
+    timeout retry 1s
+    hold valid 10s
+
+frontend loadbalancer
+    bind *:80
+    acl api path_beg /api
+    acl statics path_beg /statics
+
+    use_backend api_backend if api
+    use_backend statics_backend if statics
+    default_backend statics_backend
+
+backend api_backend
+    balance roundrobin
+    server-template api- 0-{{ (api_replicas | int) - 1 }} api:8080 check resolvers docker
+
+backend statics_backend
+    balance uri
+    hash-type consistent
+    http-send-name-header X-Server-ID
+    server-template statics- 0-{{ (statics_replicas | int) - 1 }} statics:80 check resolvers docker

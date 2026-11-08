@@ -1,0 +1,53 @@
+---
+- name: Ensure app config directories exist
+  ansible.builtin.file:
+    path: "{{ app_dir_path }}/{{ item }}"
+    state: directory
+    owner: "{{ app_user }}"
+    group: "{{ app_user }}"
+    mode: "0755"
+  loop:
+    - nginx
+    - haproxy
+
+- name: Render HAProxy config
+  ansible.builtin.template:
+    src: haproxy.cfg.j2
+    dest: "{{ haproxy_config_file_src_path }}"
+    owner: "{{ app_user }}"
+    group: "{{ app_user }}"
+    mode: "0644"
+  notify: Restart HAProxy
+
+- name: Copy Nginx config
+  copy:
+    src: nginx.conf
+    dest: "{{ nginx_config_file_src_path }}"
+    owner: "{{ app_user }}"
+    group: "{{ app_user }}"
+    mode: "0644"
+  notify: Restart Nginx
+
+- name: Ensure the app is deployed (with docker-compose)
+  community.docker.docker_compose_v2:
+    project_name: "{{ app_name }}"
+    definition: "{{ lookup('template', 'docker-compose.yaml.j2') | from_yaml }}"
+    state: present
+    pull: missing
+    remove_orphans: true
+
+- name: Execute pending handlers if needed (nginx/haproxy restarts)
+  ansible.builtin.meta: flush_handlers
+
+- name: Check app endpoints via HTTP (200 status code expected)
+  ansible.builtin.uri:
+    url: "http://127.0.0.1/{{ item }}"
+    status_code: 200
+  loop:
+    - statics
+    - api
+  retries: 3
+  delay: 5
+  changed_when: false
+  register: endpoint_checks
+  until: endpoint_checks is succeeded

@@ -1,0 +1,29 @@
+---
+- name: Install Docker apt sources signed with GPG 
+  deb822_repository:
+    name: Docker
+    types: deb
+    uris: "{{ docker_repo_apt_url }}"
+    suites: "{{ ansible_facts['distribution_release'] }}"
+    components: stable
+    signed_by: "{{ docker_repo_gpg_key_url }}"
+
+- name: Install Docker packages and dependencies
+  apt:
+    name: "{{ item }}"
+    state: present
+    cache_valid_time: "{{ apt_default_cache_valid_time }}"
+  loop: "{{ docker_packages }}"
+
+- name: Add docker users to docker group
+  user:
+    name: "{{ item }}"
+    groups: docker
+    append: yes
+  loop: "{{ docker_users }}"
+
+- name: Ensure Docker is enabled and running on systemd
+  systemd:
+    name: docker
+    state: started
+    enabled: yes

@@ -1,0 +1,41 @@
+services:
+  lb:
+    image: haproxy:3.0
+    volumes:
+      - {{ haproxy_config_file_src_path }}:/usr/local/etc/haproxy/haproxy.cfg:ro
+    ports:
+      - 80:80
+    expose:
+      - 80
+    networks:
+      - external
+      - internal
+    depends_on:
+      - api
+      - statics
+
+  api:
+    image: registry.k8s.io/echoserver:1.8
+    deploy:
+      replicas: {{ api_replicas }}
+    expose: 
+      - 8080
+    networks: 
+      - internal
+
+  statics:
+    image: nginx:latest
+    deploy:
+      replicas: {{ statics_replicas }}
+    volumes:
+      -  {{ nginx_config_file_src_path }}:/etc/nginx/conf.d/default.conf:ro
+    expose: 
+      - 80
+    networks: 
+      - internal
+
+networks:
+  external:
+    driver: bridge
+  internal:
+    internal: true
