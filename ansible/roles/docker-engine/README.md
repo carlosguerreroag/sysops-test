@@ -1,38 +1,39 @@
-Role Name
-=========
+# docker-engine
 
-A brief description of the role goes here.
+>Ansible role that installs Docker Engine and the Compose plugin on Ubuntu hosts, after this role is run, the host is ready to run containers and `docker-compose`.
 
-Requirements
-------------
+## What it does
 
-Any pre-requisites that may not be covered by Ansible itself or the role should be mentioned here. For instance, if the role uses the EC2 module, it may be a good idea to mention in this section that the boto package is required.
+- Adds the official Docker APT repository with its GPG key (using `deb822_repository`).
+- Installs `docker-ce`, `docker-ce-cli`, `containerd.io`, `docker-buildx-plugin` and `docker-compose-plugin`.
+- Adds the `vagrant` user to the `docker` group so that `sudo` is not required.
+- Starts the Docker service and enables it at boot.
 
-Role Variables
---------------
+## Requirements
 
-A description of the settable variables for this role should go here, including any variables that are in defaults/main.yml, vars/main.yml, and any variables that can/should be set via parameters to the role. Any variables that are read from other roles and/or the global scope (ie. hostvars, group vars, etc.) should be mentioned here as well.
+- This role uses `deb822_repository`, which requires ansible-core 2.15 or later.
+- Network access on the target host to reach the Docker repository.
 
-Dependencies
-------------
+## Variables
 
-A list of other roles hosted on Galaxy should go here, plus any details in regards to parameters that may need to be set for other roles, or variables that are used from other roles.
+| Variable | Default | Description |
+|---|---|---|
+| `docker_packages` | docker-ce, docker-ce-cli, containerd.io, docker-buildx-plugin, docker-compose-plugin | Packages to install |
+| `docker_users` | [vagrant] | Users added to the docker group |
+| `docker_repo_apt_url` | https://download.docker.com/linux/ubuntu | Docker APT repository |
+| `docker_repo_gpg_key_url` | https://download.docker.com/linux/ubuntu/gpg | GPG key for the repository |
+| `apt_default_cache_valid_time` | 3600 | `cache_valid_time` value passed to the apt module |
 
-Example Playbook
-----------------
+## Usage
 
-Including an example of how to use your role (for instance, with variables passed in as parameters) is always nice for users too:
+```yaml
+- hosts: all
+  become: true
+  roles:
+    - docker-engine
+```
 
-    - hosts: servers
-      roles:
-         - { role: username.rolename, x: 42 }
+## Notes
 
-License
--------
-
-BSD
-
-Author Information
-------------------
-
-An optional section for the role authors to include contact information, or a website (HTML is not allowed).
+- The `sysops-app-poc` role declares this role as a dependency in `meta/main.yml`.
+- The `docker` group is assigned with `append: yes`, so the user's existing groups are preserved.
