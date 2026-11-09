@@ -114,8 +114,6 @@ A possible solution to this, considered and discarded, was to loop the `statics`
 | `defaults/main.yml` | Role defaults |
 | `meta/main.yml` | Dependency on `docker-engine` |
 
-The HAProxy and nginx configuration files are explained line by line in `haproxy-docs.md` and `nginx-docs.md` at the repository root.
-
 <br>
 
 ## Deployment
